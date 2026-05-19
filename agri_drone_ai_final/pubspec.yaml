@@ -1,0 +1,66 @@
+name: agri_drone_ai
+description: AI-Powered Autonomous Drone for Smart Agriculture
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.4.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # Dependency Injection
+  get_it: ^7.7.0
+
+  # Networking
+  dio: ^5.7.0
+
+  # Functional Error Handling
+  dartz: ^0.10.1
+
+  # Image Picking (AI Diagnostic)
+  image_picker: ^1.1.2
+
+  # UI
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+
+  # Firebase
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
+
+  # Secure token storage
+  flutter_secure_storage: ^9.2.2
+
+  # Biometric login
+  local_auth: ^2.3.0
+
+  # Local Storage
+  shared_preferences: ^2.3.3
+
+  # Internationalization (must match the version pinned by flutter_localizations)
+  intl: ^0.20.2
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  # Re-enable when real assets are added:
+  # assets:
+  #   - assets/images/
+  #   - assets/icons/

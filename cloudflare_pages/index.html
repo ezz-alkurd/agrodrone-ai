@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // ── Set this to your Render URL once deployed, e.g.:
+    // window.AGRODRONE_API_BASE = 'https://agrodrone-api.onrender.com';
+    window.AGRODRONE_API_BASE = '';
+  </script>
+  <title>AgroDrone AI — Intelligent Agriculture Monitoring</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ════════════════════════════════════════════════════════════════
+       RESET & VARIABLES
+    ════════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    ::selection { background: rgba(29,223,122,0.25); }
+
+    :root {
+      --bg-0:    #04060f;
+      --bg-1:    #080d1c;
+      --bg-2:    #0d1428;
+      --card:    rgba(255,255,255,0.035);
+      --card-h:  rgba(255,255,255,0.06);
+      --border:  rgba(255,255,255,0.07);
+      --borderB: rgba(255,255,255,0.13);
+
+      --green:   #1ddf7a;
+      --green-d: #14b361;
+      --green-g: rgba(29,223,122,0.18);
+      --fire:    #ff4d2e;
+      --fire-g:  rgba(255,77,46,0.18);
+      --amber:   #f5a623;
+      --amber-g: rgba(245,166,35,0.18);
+
+      --text:    #eef2ff;
+      --dim:     #8892b0;
+      --muted:   #3e4562;
+
+      --nav-h:   68px;
+      --r-sm:    10px;
+      --r-md:    16px;
+      --r-lg:    24px;
+      --r-xl:    32px;
+
+      --fh: 'Space Grotesk', system-ui, sans-serif;
+      --fb: 'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      font-family: var(--fb);
+      background: var(--bg-0);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-0); }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--green-d); }
+
+    /* ════════════════════════════════════════════════════════════════
+       NAV
+    ════════════════════════════════════════════════════════════════ */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      height: var(--nav-h);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(1.25rem, 5vw, 3.5rem);
+      background: rgba(4,6,15,0.6);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border-bottom: 1px solid var(--border);
+      transition: background .3s, border-color .3s;
+    }
+    nav.scrolled { background: rgba(4,6,15,0.9); border-bottom-color: var(--borderB); }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: var(--fh); font-size: 1.05rem; font-weight: 700;
+      color: var(--text); text-decoration: none; letter-spacing: -.3px;
+    }
+    .logo-mark {
+      width: 34px; height: 34px; border-radius: 9px;
+      background: linear-gradient(135deg, var(--green), #0a8f4e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; letter-spacing: .4px;
+      box-shadow: 0 0 18px var(--green-g);
+    }
+    .logo em { color: var(--green); font-style: normal; }
+
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--dim); text-decoration: none;
+      font-size: .875rem; font-weight: 500; transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-right { display: flex; align-items: center; gap: .75rem; }
+    .btn-ghost {
+      background: none; border: none; cursor: pointer;
+      color: var(--dim); font-size: .875rem; font-weight: 500;
+      padding: 8px 16px; border-radius: var(--r-sm);
+      transition: color .2s, background .2s; font-family: var(--fb);
+    }
+    .btn-ghost:hover { color: var(--text); background: rgba(255,255,255,.06); }
+    .nav-cta {
+      background: var(--green); color: #04060f;
+      font-size: .875rem; font-weight: 700;
+      padding: 9px 20px; border-radius: var(--r-sm);
+      border: none; cursor: pointer; font-family: var(--fb);
+      box-shadow: 0 0 22px var(--green-g);
+      transition: box-shadow .2s, transform .15s;
+    }
+    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 0 34px rgba(29,223,122,.38); }
+
+    /* ════════════════════════════════════════════════════════════════
+       HERO
+    ════════════════════════════════════════════════════════════════ */
+    .hero {
+      position: relative; min-height: 95vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: calc(var(--nav-h) + 48px) clamp(1.25rem, 5vw, 3.5rem) 60px;
+      overflow: hidden; text-align: center;
+    }
+    #hero-canvas { position: absolute; inset: 0; z-index: 0; opacity: .45; }
+
+    .glow { position: absolute; z-index: 0; border-radius: 50%; pointer-events: none; }
+    .glow-1 {
+      width: 740px; height: 520px;
+      background: radial-gradient(ellipse, rgba(29,223,122,.09) 0%, transparent 70%);
+      top: -120px; left: 50%; transform: translateX(-50%);
+      animation: ga 9s ease-in-out infinite alternate;
+    }
+    .glow-2 {
+      width: 540px; height: 420px;
+      background: radial-gradient(ellipse, rgba(255,77,46,.06) 0%, transparent 70%);
+      bottom: 0; right: 0;
+      animation: gb 11s ease-in-out 2s infinite alternate;
+    }
+    .glow-3 {
+      width: 420px; height: 420px;
+      background: radial-gradient(ellipse, rgba(29,223,122,.05) 0%, transparent 70%);
+      bottom: 8%; left: 0;
+      animation: gc 13s ease-in-out 1s infinite alternate;
+    }
+    @keyframes ga { from{transform:translateX(-50%) scale(1)}  to{transform:translateX(-50%) scale(1.18) translateY(18px)} }
+    @keyframes gb { from{transform:scale(1)}  to{transform:scale(1.2) translate(-12px,-18px)} }
+    @keyframes gc { from{transform:scale(1)}  to{transform:scale(1.25) translate(10px,-12px)} }
+
+    .hero-grid {
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.017) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.017) 1px, transparent 1px);
+      background-size: 58px 58px;
+      mask-image: radial-gradient(ellipse 80% 65% at 50% 18%, black 20%, transparent 100%);
+      -webkit-mask-image: radial-gradient(ellipse 80% 65% at 50% 18%, black 20%, transparent 100%);
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 880px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(29,223,122,.08); border: 1px solid rgba(29,223,122,.22);
+      border-radius: 99px; padding: 6px 16px;
+      font-size: .77rem; font-weight: 600; color: var(--green);
+      letter-spacing: .3px; margin-bottom: 1.75rem;
+      animation: fadeUp .7s ease forwards;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green); box-shadow: 0 0 7px var(--green);
+      animation: bdot 2.2s infinite;
+    }
+    @keyframes bdot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.35;transform:scale(.75)} }
+
+    h1.hero-title {
+      font-family: var(--fh);
+      font-size: clamp(2.6rem, 7.5vw, 5.2rem);
+      font-weight: 700; line-height: 1.07; letter-spacing: -1.8px;
+      margin-bottom: 1.4rem;
+      animation: fadeUp .7s ease .1s forwards;
+    }
+    .line-1 { display: block; color: var(--text); }
+    .line-2 {
+      display: block;
+      background: linear-gradient(90deg, var(--green) 0%, #a8ffcf 45%, #1ddf7a 100%);
+      background-size: 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem); color: var(--dim);
+      line-height: 1.75; max-width: 640px; margin: 0 auto 2.5rem;
+      animation: fadeUp .7s ease .2s forwards;
+    }
+    .hero-actions {
+      display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+      animation: fadeUp .7s ease .3s forwards;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green); color: #04060f;
+      font-weight: 700; font-size: .95rem;
+      padding: 14px 28px; border-radius: var(--r-md);
+      text-decoration: none; border: none; cursor: pointer; font-family: var(--fb);
+      box-shadow: 0 0 34px var(--green-g), inset 0 1px 0 rgba(255,255,255,.22);
+      transition: transform .15s, box-shadow .2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(29,223,122,.42), inset 0 1px 0 rgba(255,255,255,.22); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.055); border: 1px solid var(--borderB);
+      color: var(--text); font-weight: 600; font-size: .95rem;
+      padding: 14px 28px; border-radius: var(--r-md);
+      text-decoration: none; cursor: pointer; font-family: var(--fb);
+      backdrop-filter: blur(8px); transition: background .2s, border-color .2s, transform .15s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,.1); border-color: rgba(29,223,122,.4); transform: translateY(-2px); }
+
+    /* ── Drone visual ── */
+    .hero-drone {
+      position: relative; z-index: 1; margin-top: 3.5rem;
+      animation: fadeUp .7s ease .4s forwards;
+    }
+    .drone-wrap {
+      position: relative; width: 200px; height: 120px; margin: 0 auto;
+      animation: drone-float 6s ease-in-out infinite;
+    }
+    @keyframes drone-float { 0%,100%{transform:translateY(0) rotate(-1.5deg)} 50%{transform:translateY(-18px) rotate(1.5deg)} }
+
+    .drone-ring {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(29,223,122,.18);
+      top: 50%; left: 50%; transform: translate(-50%,-50%);
+    }
+    .ring-1 { width: 180px; height: 180px; animation: rpulse 3s ease-in-out infinite; }
+    .ring-2 { width: 260px; height: 260px; animation: rpulse 3s ease-in-out .5s infinite; opacity: .55; }
+    .ring-3 { width: 360px; height: 360px; animation: rpulse 3s ease-in-out 1s infinite; opacity: .28; }
+    @keyframes rpulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.2} 50%{transform:translate(-50%,-50%) scale(1.06);opacity:.55} }
+
+    /* ── Hero stats ── */
+    .hero-stats {
+      display: flex; gap: clamp(2rem, 6vw, 5rem);
+      justify-content: center; flex-wrap: wrap;
+      margin-top: 3rem; position: relative; z-index: 1;
+      animation: fadeUp .7s ease .55s forwards;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: var(--fh); font-size: 2.5rem; font-weight: 700;
+      color: var(--green); line-height: 1;
+    }
+    .stat-label { font-size: .73rem; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: .8px; }
+    .stat-div { width: 1px; background: var(--border); align-self: stretch; margin: 4px 0; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:none} }
+
+    /* ════════════════════════════════════════════════════════════════
+       TECH STRIP
+    ════════════════════════════════════════════════════════════════ */
+    .tech-strip {
+      padding: 2.25rem clamp(1.25rem, 5vw, 3.5rem);
+      background: var(--bg-1);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .tech-label {
+      text-align: center; font-size: .7rem; font-weight: 700;
+      letter-spacing: 2.5px; color: var(--muted); text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .tech-logos {
+      display: flex; align-items: center; justify-content: center;
+      gap: clamp(1.5rem, 5vw, 4rem); flex-wrap: wrap;
+    }
+    .tech-logo {
+      display: flex; align-items: center; gap: 9px;
+      font-size: .88rem; font-weight: 600; color: var(--muted);
+      opacity: .55; transition: opacity .2s, color .2s; cursor: default;
+    }
+    .tech-logo:hover { opacity: 1; color: var(--dim); }
+    .tl-icon {
+      width: 30px; height: 30px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .62rem; font-weight: 800; letter-spacing: .5px;
+      background: rgba(255,255,255,.055);
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       SHARED SECTION STYLES
+    ════════════════════════════════════════════════════════════════ */
+    .sec { padding: clamp(3.5rem, 7vw, 5.5rem) clamp(1.25rem, 5vw, 3.5rem); }
+    .sec-inner { max-width: 1260px; margin: 0 auto; }
+    .eyebrow { font-size: .7rem; font-weight: 700; letter-spacing: 2.5px; color: var(--green); text-transform: uppercase; margin-bottom: .7rem; }
+    .sec-title {
+      font-family: var(--fh); font-size: clamp(1.85rem, 4vw, 3.1rem);
+      font-weight: 700; line-height: 1.1; letter-spacing: -.8px; margin-bottom: .9rem;
+    }
+    .sec-sub { font-size: 1.05rem; color: var(--dim); line-height: 1.75; max-width: 570px; }
+
+    /* Reveal */
+    .reveal      { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
+    .reveal-l    { opacity:0; transform:translateX(-28px); transition:opacity .65s ease, transform .65s ease; }
+    .reveal-r    { opacity:0; transform:translateX(28px); transition:opacity .65s ease, transform .65s ease; }
+    .v           { opacity:1 !important; transform:none !important; }
+    .d1{transition-delay:.1s} .d2{transition-delay:.2s} .d3{transition-delay:.3s} .d4{transition-delay:.4s}
+
+    /* ════════════════════════════════════════════════════════════════
+       MODELS SECTION — BENTO GRID
+    ════════════════════════════════════════════════════════════════ */
+    .models-bg {
+      background: var(--bg-1);
+      position: relative;
+    }
+    .models-bg::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, rgba(255,77,46,.25), rgba(29,223,122,.25), transparent);
+    }
+
+    .models-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 16px; margin-top: 3.5rem;
+    }
+    @media(max-width:768px){ .models-grid{grid-template-columns:1fr} }
+
+    .mc {
+      border-radius: var(--r-lg); border: 1px solid var(--border);
+      background: var(--card); backdrop-filter: blur(14px);
+      overflow: hidden; position: relative;
+      transition: transform .22s, border-color .25s;
+      transform-style: preserve-3d;
+    }
+    .mc:hover { transform: translateY(-5px); }
+    .mc.fire-card  { border-color: rgba(255,77,46,.18);  background: linear-gradient(140deg, rgba(255,77,46,.055) 0%, transparent 55%); }
+    .mc.dis-card   { border-color: rgba(245,166,35,.18); background: linear-gradient(140deg, rgba(245,166,35,.05) 0%, transparent 55%); }
+    .mc.fire-card:hover { border-color: rgba(255,77,46,.4); }
+    .mc.dis-card:hover  { border-color: rgba(245,166,35,.38); }
+
+    /* Fire visual */
+    .mc-visual { height: 180px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .fire-bg { background: radial-gradient(ellipse at 50% 110%, rgba(255,77,46,.32) 0%, rgba(255,150,0,.1) 40%, transparent 70%); width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
+    .flame { position:relative; width:80px; height:100px; display:flex; align-items:flex-end; justify-content:center; filter:blur(.8px); }
+    .fp { position:absolute; bottom:0; border-radius:50% 50% 20% 20%; }
+    .fp-o { width:80px; height:90px; background:linear-gradient(to top,#ff4d2e,#ff8c00,#ffcc00); animation:fl 1.2s ease-in-out infinite alternate; }
+    .fp-m { width:55px; height:65px; background:linear-gradient(to top,#ff8c00,#ffcc00,#fff8); animation:fl 1.5s ease-in-out .1s infinite alternate; }
+    .fp-i { width:30px; height:42px; background:linear-gradient(to top,#ffcc00,#ffffff88); animation:fl 1.9s ease-in-out .2s infinite alternate; }
+    @keyframes fl { 0%{transform:scaleX(1) scaleY(1) rotate(-2deg)} 100%{transform:scaleX(.96) scaleY(.97) rotate(3deg)} }
+
+    /* Disease / scan visual */
+    .dis-bg { background: radial-gradient(ellipse at 50% 110%, rgba(29,223,122,.18) 0%, rgba(245,166,35,.07) 40%, transparent 70%); width:100%; height:100%; position:relative; overflow:hidden; }
+    .scan-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:22px; width:100%; }
+    .sc { height:36px; border-radius:7px; animation:sc 3.2s ease-in-out infinite; }
+    .sc.h { background:rgba(29,223,122,.28); }
+    .sc.i { background:rgba(245,166,35,.5); }
+    .sc.s { background:rgba(255,77,46,.4); }
+    @keyframes sc { 0%,90%,100%{opacity:.55} 45%{opacity:1;transform:scale(1.05)} }
+    .scan-line { position:absolute; left:0; right:0; height:2px; background:linear-gradient(90deg,transparent,var(--green),transparent); animation:sl 2.5s linear infinite; box-shadow:0 0 12px var(--green); }
+    @keyframes sl { 0%{top:0} 100%{top:100%} }
+
+    /* Card body */
+    .mc-body { padding: 1.75rem; }
+    .mc-tag {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:.7rem; font-weight:700; letter-spacing:1.5px;
+      text-transform:uppercase; padding:4px 10px; border-radius:99px; margin-bottom:1rem;
+    }
+    .fire-tag { color:var(--fire); background:rgba(255,77,46,.1); border:1px solid rgba(255,77,46,.22); }
+    .dis-tag  { color:var(--amber); background:rgba(245,166,35,.1); border:1px solid rgba(245,166,35,.22); }
+    .mc h3 { font-family:var(--fh); font-size:1.5rem; font-weight:700; letter-spacing:-.4px; margin-bottom:.55rem; }
+    .mc p  { font-size:.88rem; color:var(--dim); line-height:1.65; margin-bottom:1.4rem; }
+    .metrics { display:flex; gap:1.75rem; flex-wrap:wrap; }
+    .met { display:flex; flex-direction:column; gap:3px; }
+    .mv { font-family:var(--fh); font-size:1.5rem; font-weight:700; }
+    .mv.g{color:var(--green)} .mv.f{color:var(--fire)} .mv.a{color:var(--amber)}
+    .mk { font-size:.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+
+    /* Bento smalls */
+    .bento-smalls { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:16px; }
+    @media(max-width:640px){ .bento-smalls{grid-template-columns:1fr} }
+    .bs {
+      background:var(--card); border:1px solid var(--border); border-radius:var(--r-md);
+      padding:1.5rem; transition:border-color .22s, transform .2s;
+    }
+    .bs:hover { border-color:rgba(29,223,122,.3); transform:translateY(-4px); }
+    .bs-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display:flex; align-items:center; justify-content:center;
+      margin-bottom:.75rem; font-size:.68rem; font-weight:800; letter-spacing:.8px;
+      color:var(--green); background:rgba(29,223,122,.08);
+      border:1px solid rgba(29,223,122,.18);
+    }
+    .bs h4 { font-family:var(--fh); font-size:1rem; font-weight:600; margin-bottom:.35rem; }
+    .bs p  { font-size:.8rem; color:var(--dim); line-height:1.5; }
+
+    /* ════════════════════════════════════════════════════════════════
+       DEMO SECTION
+    ════════════════════════════════════════════════════════════════ */
+    .demo-grid {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:2.5rem; margin-top:3rem; align-items:start;
+    }
+    @media(max-width:768px){ .demo-grid{grid-template-columns:1fr} }
+
+    .demo-panel {
+      background:var(--card); border:1px solid var(--border);
+      border-radius:var(--r-lg); overflow:hidden; backdrop-filter:blur(14px);
+    }
+    .panel-bar {
+      padding:.9rem 1.25rem; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; gap:8px;
+    }
+    .dot { width:10px; height:10px; border-radius:50%; }
+    .dot-r{background:#ff5f57} .dot-y{background:#febc2e} .dot-g{background:#28c840}
+    .bar-title { flex:1; text-align:center; font-size:.75rem; color:var(--muted); }
+
+    .model-tabs { display:flex; gap:8px; padding:1rem 1.25rem .5rem; }
+    .mtab {
+      flex:1; padding:10px; border-radius:var(--r-sm);
+      border:1px solid var(--border); background:transparent;
+      color:var(--dim); font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:all .2s; text-align:center; font-family:var(--fb);
+    }
+    .mtab.af { background:rgba(255,77,46,.1); border-color:rgba(255,77,46,.4); color:var(--fire); }
+    .mtab.ad { background:rgba(29,223,122,.08); border-color:rgba(29,223,122,.35); color:var(--green); }
+
+    .upload-zone {
+      margin:1rem 1.25rem; padding:2.25rem 1.5rem;
+      border:2px dashed var(--border); border-radius:var(--r-md);
+      text-align:center; cursor:pointer; position:relative; overflow:hidden;
+      transition:border-color .22s, background .22s;
+    }
+    .upload-zone:hover, .upload-zone.drag { border-color:var(--green); background:rgba(29,223,122,.04); }
+    .upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+    .up-icon {
+      width:54px; height:54px; border-radius:14px;
+      display:inline-flex; align-items:center; justify-content:center;
+      margin-bottom:.7rem; font-size:.64rem; font-weight:800; letter-spacing:1.2px;
+      color:var(--green); background:rgba(29,223,122,.08);
+      border:1px solid rgba(29,223,122,.22);
+    }
+    .upload-zone h4 { font-weight:600; font-size:.95rem; margin-bottom:.35rem; }
+    .upload-zone p { font-size:.78rem; color:var(--dim); }
+
+    .analyze-btn-wrap { padding:.5rem 1.25rem 1.25rem; }
+
+    /* Result area */
+    .result-area { padding:1.25rem; }
+    .result-ph { text-align:center; padding:3rem 1rem; color:var(--muted); font-size:.88rem; }
+    .result-card { background:rgba(255,255,255,.03); border:1px solid var(--border); border-radius:var(--r-md); overflow:hidden; display:none; }
+    .result-img-wrap {
+      width:100%; height:190px;
+      background:linear-gradient(135deg,#120a0a 0%,#0a130e 100%);
+      display:flex; align-items:center; justify-content:center;
+      font-size:.75rem; color:var(--muted); overflow:hidden; position:relative;
+    }
+    .result-img-wrap img { width:100%; height:100%; object-fit:cover; }
+    .result-body { padding:1rem; }
+    .rr { display:flex; justify-content:space-between; align-items:center; padding:7px 0; border-bottom:1px solid var(--border); font-size:.82rem; }
+    .rr:last-child{border-bottom:none}
+    .rk{color:var(--dim)} .rv{font-weight:600}
+    .conf-wrap { display:flex; align-items:center; gap:8px; }
+    .conf-bar { width:78px; height:5px; border-radius:3px; background:rgba(255,255,255,.08); overflow:hidden; }
+    .conf-fill { height:100%; border-radius:3px; background:var(--fire); transition:width .9s ease; width:0; }
+    .detected{color:var(--fire)} .healthy{color:var(--green)} .warn{color:var(--amber)}
+    .status-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 10px; border-radius:99px; font-size:.72rem; font-weight:700;
+    }
+    .badge-fire { background:rgba(255,77,46,.12); color:var(--fire); border:1px solid rgba(255,77,46,.25); }
+    .badge-ok   { background:rgba(29,223,122,.1);  color:var(--green); border:1px solid rgba(29,223,122,.22); }
+    .badge-warn { background:rgba(245,166,35,.1);  color:var(--amber); border:1px solid rgba(245,166,35,.22); }
+
+    /* ════════════════════════════════════════════════════════════════
+       PIPELINE
+    ════════════════════════════════════════════════════════════════ */
+    .pipeline-bg {
+      background: var(--bg-1);
+      position: relative;
+    }
+    .pipeline-bg::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0; height:1px;
+      background: linear-gradient(90deg, transparent, rgba(29,223,122,.3), transparent);
+    }
+    .pipeline {
+      display:grid; grid-template-columns:repeat(5,1fr);
+      gap:0; margin-top:3rem; position:relative;
+    }
+    @media(max-width:900px){ .pipeline{grid-template-columns:1fr 1fr;gap:1rem} .pipe-arrow{display:none} }
+    @media(max-width:480px){ .pipeline{grid-template-columns:1fr} }
+
+    .pipe-step {
+      display:flex; flex-direction:column; align-items:center;
+      text-align:center; padding:2rem 1rem 1.5rem; position:relative;
+    }
+    .pipe-step:not(:last-child)::after {
+      content:''; position:absolute; right:-1px; top:2.3rem;
+      width:calc(100% - 64px); height:1.5px;
+      background: linear-gradient(90deg, rgba(29,223,122,.35), rgba(29,223,122,.06));
+      left:calc(50% + 32px); z-index:0;
+    }
+    @media(max-width:900px){ .pipe-step::after{display:none} }
+
+    .pipe-icon {
+      width:64px; height:64px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:.75rem; font-weight:800; letter-spacing:1.2px; margin-bottom:.9rem;
+      background: radial-gradient(circle at 30% 30%, rgba(29,223,122,.12), rgba(29,223,122,.03));
+      border:1.5px solid rgba(29,223,122,.25);
+      box-shadow: 0 0 18px rgba(29,223,122,.08);
+      transition:border-color .22s, transform .2s, box-shadow .2s;
+      position:relative;
+    }
+    .pipe-step:hover .pipe-icon { border-color:var(--green); transform:scale(1.12); box-shadow:0 0 28px var(--green-g); }
+    .pipe-num {
+      font-size:.6rem; font-weight:700; color:var(--green); letter-spacing:1.5px;
+      margin-bottom:.4rem; opacity:.7;
+    }
+    .pipe-step h4 { font-family:var(--fh); font-size:.95rem; font-weight:600; margin-bottom:.35rem; }
+    .pipe-step p { font-size:.76rem; color:var(--dim); line-height:1.5; }
+
+    /* ════════════════════════════════════════════════════════════════
+       APP SECTION
+    ════════════════════════════════════════════════════════════════ */
+    .app-layout { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; margin-top:2.5rem; }
+    @media(max-width:768px){ .app-layout{grid-template-columns:1fr; text-align:center} .app-features .af{text-align:left} .phone-wrap{margin:0 auto} }
+
+    .app-features { list-style:none; margin:1.5rem 0 2rem; }
+    .af { display:flex; align-items:flex-start; gap:12px; padding:.75rem 0; border-bottom:1px solid var(--border); }
+    .af:last-child{border-bottom:none}
+    .af-icon { width:34px; height:34px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:.68rem; font-weight:800; letter-spacing:.8px; flex-shrink:0; color:var(--green); background:rgba(29,223,122,.09); border:1px solid rgba(29,223,122,.2); }
+    .af-text h5 { font-size:.9rem; font-weight:600; margin-bottom:2px; }
+    .af-text p { font-size:.78rem; color:var(--dim); }
+
+    .coming-soon-card {
+      margin-top: 1.35rem;
+      padding: 1.15rem;
+      border-radius: var(--r-md);
+      border: 1px solid rgba(29,223,122,.22);
+      background:
+        linear-gradient(135deg, rgba(29,223,122,.1), rgba(255,255,255,.025) 42%),
+        rgba(255,255,255,.03);
+    }
+    .coming-soon-top {
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap:14px; flex-wrap:wrap; margin-bottom: .95rem;
+    }
+    .coming-soon-top h4 { font-family: var(--fh); font-size: 1rem; margin-bottom: .2rem; }
+    .coming-soon-top p { color: var(--dim); font-size: .82rem; line-height: 1.6; max-width: 520px; }
+    .release-badge {
+      display:inline-flex; align-items:center; min-height:30px;
+      padding:6px 11px; border-radius:99px;
+      font-size:.66rem; font-weight:800; letter-spacing:1.1px;
+      color:var(--green); text-transform:uppercase;
+      background:rgba(29,223,122,.1); border:1px solid rgba(29,223,122,.22);
+      white-space:nowrap;
+    }
+    .soon-progress { height:7px; border-radius:99px; overflow:hidden; background:rgba(255,255,255,.07); margin-bottom:.95rem; }
+    .soon-progress span {
+      display:block; width:72%; height:100%;
+      background:linear-gradient(90deg, var(--green), #79f5ad);
+      border-radius:inherit; box-shadow:0 0 18px var(--green-g);
+    }
+    .soon-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; margin-bottom:1rem; }
+    .soon-item { padding:.85rem; border-radius:var(--r-sm); background:rgba(4,6,15,.26); border:1px solid var(--border); }
+    .soon-item strong { display:block; font-size:.8rem; margin-bottom:2px; }
+    .soon-item span { display:block; color:var(--dim); font-size:.72rem; line-height:1.45; }
+    .soon-actions { display:flex; gap:12px; flex-wrap:wrap; }
+    @media(max-width:620px){ .soon-grid{grid-template-columns:1fr} }
+
+    /* Phone mockup */
+    .phone-wrap { display:flex; justify-content:center; }
+    .phone {
+      width:230px; height:430px;
+      border:2.5px solid rgba(255,255,255,.11); border-radius:38px;
+      background:var(--bg-2); position:relative; overflow:hidden;
+      box-shadow:0 30px 70px rgba(0,0,0,.65), inset 0 0 0 1px rgba(255,255,255,.05), 0 0 40px rgba(29,223,122,.06);
+      animation:phonefloat 5.5s ease-in-out infinite;
+    }
+    @keyframes phonefloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    .phone-notch { width:94px; height:24px; background:rgba(0,0,0,.85); border-radius:0 0 14px 14px; margin:0 auto; }
+    .phone-screen { padding:8px 14px; height:calc(100% - 24px); display:flex; flex-direction:column; gap:7px; }
+    .phone-hdr { font-size:.58rem; font-weight:700; color:var(--green); text-align:center; padding:3px 0; letter-spacing:1.2px; }
+    .phone-map {
+      flex:1; border-radius:11px;
+      background:linear-gradient(135deg,#0a1628 0%,#0d200f 100%);
+      position:relative; overflow:hidden;
+    }
+    .pm-grid {
+      position:absolute; inset:0;
+      background-image: linear-gradient(rgba(29,223,122,.055) 1px,transparent 1px), linear-gradient(90deg,rgba(29,223,122,.055) 1px,transparent 1px);
+      background-size:20px 20px;
+    }
+    .pm-alert { position:absolute; top:22%; left:22%; width:18px; height:18px; border-radius:50%; background:var(--fire); box-shadow:0 0 14px rgba(255,77,46,.8); animation:palert 2s ease-in-out infinite; }
+    @keyframes palert { 0%,100%{transform:scale(1);opacity:.9} 50%{transform:scale(1.45);opacity:.55} }
+    .pm-drone { position:absolute; bottom:28%; right:22%; width:13px; height:13px; border-radius:50%; background:var(--green); box-shadow:0 0 10px rgba(29,223,122,.8); animation:pmove 4.5s ease-in-out infinite; }
+    @keyframes pmove { 0%,100%{transform:translate(0,0)} 33%{transform:translate(-10px,-9px)} 66%{transform:translate(9px,-13px)} }
+    .pm-path { position:absolute; top:0; left:0; width:100%; height:100%; opacity:.25; }
+    .phone-stats { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+    .psc { background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:9px; padding:7px 9px; }
+    .psc-val { font-size:.95rem; font-weight:700; color:var(--green); }
+    .psc-key { font-size:.5rem; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+/* ════════════════════════════════════════════════════════════════
+       FOOTER
+    ════════════════════════════════════════════════════════════════ */
+    footer {
+      background:var(--bg-1); border-top:1px solid var(--border);
+      padding:2.75rem clamp(1.25rem, 5vw, 3.5rem);
+    }
+    .footer-in { max-width:1260px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1.5rem; }
+    .footer-logo { display:flex; align-items:center; gap:10px; font-family:var(--fh); font-weight:700; font-size:1rem; color:var(--text); text-decoration:none; }
+    .footer-copy { font-size:.78rem; color:var(--muted); }
+    .footer-links { display:flex; gap:1.5rem; }
+    .footer-links a { font-size:.8rem; color:var(--dim); text-decoration:none; transition:color .2s; }
+    .footer-links a:hover { color:var(--green); }
+
+    /* ════════════════════════════════════════════════════════════════
+       RESPONSIVE NAV
+    ════════════════════════════════════════════════════════════════ */
+    @media(max-width:768px){ .nav-links{display:none} }
+
+    /* ══════════════════════════════════════════════════════════════════
+       FEEDBACK TAB & PANEL
+    ══════════════════════════════════════════════════════════════════ */
+    .fb-tab {
+      position: fixed; right: 0; top: 50%;
+      transform: translateY(-50%) rotate(180deg);
+      writing-mode: vertical-rl;
+      background: linear-gradient(180deg, var(--green) 0%, #0eb85a 100%);
+      color: #04060f; font-weight: 700; font-size: .78rem;
+      letter-spacing: .8px; text-transform: uppercase;
+      padding: 18px 10px; border-radius: 0 0 10px 10px;
+      cursor: pointer; z-index: 900;
+      box-shadow: -4px 0 24px rgba(29,223,122,.25);
+      transition: padding .2s, box-shadow .2s;
+      user-select: none;
+    }
+    .fb-tab:hover { padding: 24px 10px; box-shadow: -6px 0 32px rgba(29,223,122,.4); }
+    .fb-tab.pulse { animation: fb-pulse 2s ease-in-out 3; }
+    @keyframes fb-pulse {
+      0%,100%{ box-shadow:-4px 0 24px rgba(29,223,122,.25); }
+      50%{ box-shadow:-4px 0 44px rgba(29,223,122,.7); padding:26px 10px; }
+    }
+
+    .fb-overlay {
+      position: fixed; inset: 0; background: rgba(4,6,15,.55);
+      backdrop-filter: blur(4px); z-index: 901;
+      opacity: 0; pointer-events: none;
+      transition: opacity .3s;
+    }
+    .fb-overlay.open { opacity: 1; pointer-events: all; }
+
+    .fb-panel {
+      position: fixed; right: -420px; top: 0; bottom: 0;
+      width: min(420px, 94vw);
+      background: #0a0f1e;
+      border-left: 1px solid var(--border);
+      z-index: 902; display: flex; flex-direction: column;
+      transition: right .35s cubic-bezier(.22,1,.36,1);
+      box-shadow: -20px 0 60px rgba(0,0,0,.55);
+    }
+    .fb-panel.open { right: 0; }
+
+    .fb-panel-head {
+      padding: 1.4rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
+    }
+    .fb-panel-head h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 .25rem; }
+    .fb-panel-head p { font-size: .78rem; color: var(--dim); margin: 0; line-height: 1.5; }
+    .fb-close {
+      background: rgba(255,255,255,.06); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px;
+      min-width: 52px; height: 32px; flex-shrink: 0;
+      padding: 0 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: .72rem; font-weight: 700; transition: background .15s;
+    }
+    .fb-close:hover { background: rgba(255,255,255,.12); }
+
+    .fb-notice {
+      margin: 1.2rem 1.5rem .2rem;
+      background: rgba(29,223,122,.07);
+      border: 1px solid rgba(29,223,122,.2);
+      border-radius: 10px; padding: .9rem 1rem;
+    }
+    .fb-notice-title { font-size: .72rem; font-weight: 700; color: var(--green); text-transform: uppercase; letter-spacing: .6px; margin-bottom: .35rem; }
+    .fb-notice p { font-size: .78rem; color: var(--dim); line-height: 1.55; margin: 0; }
+
+    .fb-body { padding: 1rem 1.5rem 1.5rem; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+
+    .fb-context {
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 8px; padding: .7rem 1rem;
+      font-size: .78rem; color: var(--dim);
+      display: none;
+    }
+    .fb-context.show { display: block; }
+    .fb-context strong { color: var(--text); }
+
+    .fb-label { font-size: .78rem; font-weight: 600; color: var(--text); margin-bottom: .4rem; display: block; }
+    .fb-textarea {
+      width: 100%; min-height: 130px; resize: vertical;
+      background: rgba(255,255,255,.04); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-family: var(--fb);
+      font-size: .88rem; padding: .85rem 1rem; line-height: 1.6;
+      transition: border-color .2s; box-sizing: border-box;
+    }
+    .fb-textarea:focus { outline: none; border-color: rgba(29,223,122,.5); }
+    .fb-textarea::placeholder { color: var(--muted); }
+
+    .fb-rating { display: flex; gap: .5rem; }
+    .fb-star {
+      font-size: 1.6rem; cursor: pointer; opacity: .35;
+      transition: opacity .15s, transform .15s;
+    }
+    .fb-star.on, .fb-star:hover { opacity: 1; transform: scale(1.15); }
+
+    .fb-submit {
+      width: 100%; padding: 13px;
+      background: var(--green); color: #04060f;
+      font-weight: 700; font-size: .92rem; font-family: var(--fb);
+      border: none; border-radius: 10px; cursor: pointer;
+      transition: box-shadow .2s, transform .15s;
+      box-shadow: 0 0 28px rgba(29,223,122,.3);
+    }
+    .fb-submit:hover { transform: translateY(-1px); box-shadow: 0 0 40px rgba(29,223,122,.45); }
+
+    .fb-thanks {
+      display: none; text-align: center; padding: 2rem 0;
+    }
+    .fb-thanks .ty-icon {
+      width: 54px; height: 54px; border-radius: 14px;
+      display:flex; align-items:center; justify-content:center;
+      margin: 0 auto .7rem; font-size:.8rem; font-weight:800; letter-spacing:1px;
+      color:var(--green); background:rgba(29,223,122,.1);
+      border:1px solid rgba(29,223,122,.22);
+    }
+    .fb-thanks h4 { font-size: 1.05rem; font-weight: 700; margin-bottom: .4rem; }
+    .fb-thanks p { font-size: .82rem; color: var(--dim); line-height: 1.55; }
+
+    /* Feedback trigger inside demo result */
+    .fb-result-link {
+      display: none; margin-top: .8rem;
+      background: rgba(29,223,122,.07); border: 1px solid rgba(29,223,122,.2);
+      border-radius: 8px; padding: .65rem 1rem;
+      font-size: .78rem; color: var(--green); cursor: pointer;
+      text-align: center; transition: background .2s;
+    }
+    .fb-result-link:hover { background: rgba(29,223,122,.12); }
+    .fb-result-link.show { display: block; }
+
+    /* Theme controls */
+    body.theme-field {
+      --bg-0:#06120c; --bg-1:#0b1c12; --bg-2:#132a1a;
+      --card:rgba(239,255,240,.045); --card-h:rgba(239,255,240,.075);
+      --green:#55e37c; --green-d:#24bd57; --green-g:rgba(85,227,124,.2);
+      --text:#f4fff5; --dim:#a9c4ad; --muted:#6f8875;
+    }
+    body.theme-sky {
+      --bg-0:#051018; --bg-1:#0a1a28; --bg-2:#10283b;
+      --card:rgba(226,244,255,.05); --card-h:rgba(226,244,255,.08);
+      --green:#6bc8ff; --green-d:#38a8e6; --green-g:rgba(107,200,255,.18);
+      --amber:#f7c765; --text:#f4fbff; --dim:#9eb9c9; --muted:#657f90;
+    }
+    body.theme-sunrise {
+      --bg-0:#140908; --bg-1:#20100d; --bg-2:#311813;
+      --card:rgba(255,242,226,.05); --card-h:rgba(255,242,226,.08);
+      --green:#ffb85c; --green-d:#f08b2b; --green-g:rgba(255,184,92,.19);
+      --fire:#ff644e; --amber:#ffd36d; --text:#fff8ef; --dim:#d0ad91; --muted:#8b705d;
+    }
+    .theme-select {
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--borderB);
+      color: var(--text);
+      border-radius: var(--r-sm);
+      padding: 8px 12px;
+      font-family: var(--fb);
+      font-size: .82rem;
+      cursor: pointer;
+      outline: none;
+    }
+    .theme-select option { color:#101820; background:#fff; }
+    .api-status {
+      margin-top: .85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      border-radius: 99px;
+      border: 1px solid var(--borderB);
+      color: var(--dim);
+      font-size: .74rem;
+      font-weight: 700;
+    }
+    .api-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 9px rgba(245,166,35,.45);
+    }
+    .api-status.online { color: var(--green); border-color: rgba(29,223,122,.3); }
+    .api-status.online::before { background: var(--green); box-shadow: 0 0 9px var(--green); }
+    .api-status.offline { color: var(--fire); border-color: rgba(255,77,46,.34); }
+    .api-status.offline::before { background: var(--fire); box-shadow: 0 0 9px var(--fire); }
+
+    /* Poster-inspired mission theme */
+    :root {
+      --bg-0:#06130d;
+      --bg-1:#092016;
+      --bg-2:#102b1e;
+      --card:rgba(248,244,229,.055);
+      --card-h:rgba(248,244,229,.085);
+      --border:rgba(210,229,205,.14);
+      --borderB:rgba(236,244,224,.24);
+      --green:#2fd177;
+      --green-d:#167a55;
+      --green-g:rgba(47,209,119,.2);
+      --fire:#c95a1d;
+      --fire-g:rgba(201,90,29,.2);
+      --amber:#d8a947;
+      --amber-g:rgba(216,169,71,.2);
+      --text:#f5f2e6;
+      --dim:#bdc8b2;
+      --muted:#748978;
+    }
+    body {
+      background:
+        radial-gradient(circle at 72% 8%, rgba(201,90,29,.1), transparent 28%),
+        linear-gradient(180deg, #06130d 0%, #092016 52%, #05110b 100%);
+    }
+    nav {
+      background: rgba(3,22,14,.78);
+      border-bottom-color: rgba(216,169,71,.18);
+    }
+    nav.scrolled { background: rgba(3,22,14,.94); }
+    .logo-mark {
+      color:#f5f2e6;
+      background: linear-gradient(135deg, #0b5138 0%, #0f6a47 55%, #c95a1d 100%);
+      border:1px solid rgba(245,242,230,.18);
+      border-radius: 8px;
+    }
+    .logo em { color: var(--fire); }
+    .nav-links a:hover { color: var(--amber); }
+    .hero {
+      min-height: 100vh;
+      align-items: flex-start;
+      text-align: left;
+      padding-left: clamp(1.25rem, 14vw, 13rem);
+      padding-right: clamp(1.25rem, 6vw, 5rem);
+      background:
+        linear-gradient(90deg, rgba(3,33,22,.98) 0%, rgba(3,33,22,.9) 11%, transparent 28%),
+        linear-gradient(180deg, rgba(248,244,229,.06) 0%, rgba(5,17,11,.72) 64%, #06130d 100%);
+    }
+    .hero::before {
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:0;
+      background:
+        linear-gradient(160deg, transparent 0 42%, rgba(47,209,119,.2) 42.2% 43%, transparent 43.2%),
+        repeating-linear-gradient(168deg, rgba(216,169,71,.18) 0 2px, transparent 2px 42px),
+        linear-gradient(180deg, rgba(229,218,186,.82) 0%, rgba(137,156,77,.28) 34%, rgba(20,74,39,.58) 72%, rgba(5,17,11,.92) 100%);
+      clip-path: polygon(14% 0, 100% 0, 100% 82%, 0 100%, 0 18%);
+      opacity:.64;
+    }
+    .hero::after {
+      content:"";
+      position:absolute;
+      inset:0;
+      z-index:0;
+      background-image:
+        linear-gradient(90deg, rgba(47,209,119,.16) 1px, transparent 1px),
+        linear-gradient(rgba(47,209,119,.13) 1px, transparent 1px);
+      background-size: 82px 82px;
+      mask-image: linear-gradient(90deg, transparent 0 11%, black 20%, black 82%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0 11%, black 20%, black 82%, transparent 100%);
+      opacity:.42;
+      pointer-events:none;
+    }
+    .glow { display:none; }
+    #hero-canvas { opacity:.22; }
+    .hero-grid {
+      background-image:
+        linear-gradient(90deg, transparent 0 14%, rgba(201,90,29,.52) 14% 14.2%, transparent 14.4%),
+        linear-gradient(135deg, transparent 0 45%, rgba(47,209,119,.25) 45.3% 45.6%, transparent 46%),
+        linear-gradient(rgba(245,242,230,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,242,230,.055) 1px, transparent 1px);
+      background-size: 100% 100%, 280px 160px, 42px 42px, 42px 42px;
+      mask-image: none;
+      -webkit-mask-image: none;
+      opacity:.75;
+    }
+    .hero-content {
+      max-width: 700px;
+      padding-top: clamp(2rem, 7vh, 4rem);
+    }
+    .badge {
+      color: var(--amber);
+      background: rgba(6,19,13,.58);
+      border-color: rgba(216,169,71,.28);
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+    }
+    h1.hero-title {
+      font-size: clamp(2.7rem, 7vw, 5.7rem);
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .line-2 {
+      background: linear-gradient(90deg, var(--green) 0%, #e8d06b 46%, var(--fire) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+    }
+    .hero-sub {
+      margin-left:0;
+      margin-right:0;
+      color:#d9dfcf;
+      max-width: 610px;
+    }
+    .hero-actions { justify-content:flex-start; }
+    .btn-primary {
+      background: linear-gradient(135deg, #2fd177 0%, #b8d05d 56%, #c95a1d 100%);
+      color:#03160e;
+      border-radius: 8px;
+    }
+    .btn-secondary, .theme-select {
+      border-color: rgba(216,169,71,.22);
+      background: rgba(6,19,13,.58);
+      border-radius: 8px;
+    }
+    .mission-rail {
+      position:absolute;
+      z-index:2;
+      left:0;
+      top:var(--nav-h);
+      bottom:0;
+      width:min(150px, 18vw);
+      background: linear-gradient(180deg, rgba(2,31,20,.96), rgba(3,50,33,.82));
+      border-right:2px solid rgba(201,90,29,.72);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:1.6rem;
+      padding:1.5rem .9rem;
+    }
+    .rail-item {
+      display:grid;
+      justify-items:center;
+      gap:.55rem;
+      color:#edf4df;
+      font-size:.68rem;
+      font-weight:700;
+      line-height:1.25;
+      text-align:center;
+      text-transform:uppercase;
+      letter-spacing:.4px;
+    }
+    .rail-icon {
+      width:42px;
+      height:42px;
+      border:1px solid rgba(245,242,230,.78);
+      display:grid;
+      place-items:center;
+      color:#f5f2e6;
+      font-family:var(--fh);
+      font-size:.68rem;
+      border-radius:8px;
+      background:rgba(245,242,230,.035);
+    }
+    .mission-status {
+      position:absolute;
+      z-index:2;
+      right:clamp(1.25rem, 5vw, 4rem);
+      top:32%;
+      width:min(300px, 28vw);
+      border:1px solid rgba(245,242,230,.32);
+      background:rgba(6,31,20,.55);
+      backdrop-filter:blur(12px);
+      padding:1.1rem 1.2rem;
+      box-shadow:0 20px 50px rgba(0,0,0,.22);
+    }
+    .mission-status h3 {
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:1.8px;
+      color:#f5f2e6;
+      margin-bottom:.8rem;
+    }
+    .mission-row {
+      display:flex;
+      justify-content:space-between;
+      gap:1rem;
+      padding:.28rem 0;
+      color:#dce8d2;
+      font-size:.78rem;
+      border-bottom:1px solid rgba(245,242,230,.09);
+    }
+    .mission-row:last-child { border-bottom:0; }
+    .mission-row strong { color:#f5f2e6; }
+    .field-scan {
+      position:absolute;
+      z-index:1;
+      right:14%;
+      bottom:24%;
+      width:min(420px, 35vw);
+      aspect-ratio: 1.9 / 1;
+      border:1px solid rgba(47,209,119,.56);
+      transform:skewX(-18deg) rotate(-5deg);
+      background:
+        linear-gradient(90deg, rgba(47,209,119,.24) 0 62%, rgba(201,90,29,.28) 62% 100%),
+        repeating-linear-gradient(90deg, transparent 0 28px, rgba(245,242,230,.22) 29px 30px),
+        repeating-linear-gradient(0deg, transparent 0 28px, rgba(245,242,230,.16) 29px 30px);
+      box-shadow:0 0 30px rgba(47,209,119,.18);
+      opacity:.72;
+    }
+    .field-scan::before {
+      content:"";
+      position:absolute;
+      inset:-40% 42% 100% 42%;
+      border-left:80px solid transparent;
+      border-right:80px solid transparent;
+      border-bottom:220px solid rgba(47,209,119,.18);
+      transform:skewX(18deg);
+      filter:blur(.2px);
+    }
+    .hero-drone {
+      position:absolute;
+      z-index:3;
+      right:clamp(7rem, 20vw, 18rem);
+      top:32%;
+      margin-top:0;
+    }
+    .drone-wrap { transform:scale(1.1); }
+    .drone-ring { border-color: rgba(245,242,230,.2); }
+    .hero-stats {
+      align-self:stretch;
+      justify-content:flex-start;
+      gap: clamp(1.25rem, 4vw, 3rem);
+      margin-top: clamp(3rem, 10vh, 7rem);
+      padding-left:0;
+    }
+    .tech-strip {
+      background:#efeadd;
+      border-color:rgba(6,19,13,.12);
+    }
+    .tech-label { color:#60705f; }
+    .tech-logo { color:#173d2b; opacity:.82; }
+    .tl-icon {
+      color:#0d4d35;
+      background:rgba(13,77,53,.08);
+      border:1px solid rgba(13,77,53,.15);
+    }
+    .models-bg, .pipeline-bg, footer {
+      background:
+        linear-gradient(180deg, rgba(5,17,11,.96), rgba(9,32,22,.98)),
+        var(--bg-1);
+    }
+    .demo-panel, .mc, .bs, .coming-soon-card, .result-card {
+      border-radius: 8px;
+      border-color: rgba(216,169,71,.2);
+      box-shadow: 0 24px 70px rgba(0,0,0,.18);
+    }
+    .demo-panel {
+      background:
+        linear-gradient(135deg, rgba(245,242,230,.05), rgba(47,209,119,.035)),
+        rgba(6,19,13,.74);
+    }
+    .panel-bar {
+      background: rgba(239,234,221,.08);
+      border-bottom-color: rgba(216,169,71,.18);
+    }
+    .api-connector {
+      margin:.75rem 1.25rem 0;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:8px;
+      align-items:center;
+    }
+    .api-input {
+      min-width:0;
+      width:100%;
+      background:rgba(245,242,230,.06);
+      border:1px solid rgba(216,169,71,.22);
+      color:var(--text);
+      border-radius:8px;
+      padding:10px 12px;
+      font-family:var(--fb);
+      font-size:.78rem;
+      outline:none;
+    }
+    .api-input:focus { border-color:rgba(47,209,119,.5); }
+    .api-save {
+      border:1px solid rgba(47,209,119,.3);
+      background:rgba(47,209,119,.1);
+      color:var(--green);
+      border-radius:8px;
+      padding:10px 12px;
+      font-family:var(--fb);
+      font-size:.74rem;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .api-note {
+      grid-column:1 / -1;
+      color:var(--muted);
+      font-size:.7rem;
+      line-height:1.45;
+    }
+    @media(max-width:980px) {
+      .mission-status, .field-scan { display:none; }
+      .hero-drone { right:6vw; top:58%; opacity:.75; }
+      .hero-stats { margin-top:14rem; }
+    }
+    @media(max-width:768px) {
+      .hero {
+        padding-left:1.25rem;
+        padding-top:calc(var(--nav-h) + 34px);
+      }
+      .mission-rail { display:none; }
+      .hero-content { padding-top:0; }
+      .hero-drone {
+        position:relative;
+        right:auto;
+        top:auto;
+        align-self:center;
+        margin-top:2.5rem;
+      }
+      .hero-stats {
+        margin-top:2.5rem;
+        justify-content:center;
+      }
+      .api-connector { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══════════════════════════════════════════════════════════ -->
+<nav id="nav">
+  <a href="#" class="logo">
+    <div class="logo-mark">AD</div>
+    Agro<em>Drone</em> AI
+  </a>
+  <ul class="nav-links">
+    <li><a href="#models">Models</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#pipeline">How It Works</a></li>
+    <li><a href="#app">Mobile App</a></li>
+  </ul>
+  <div class="nav-right">
+    <select class="theme-select" id="theme-select" aria-label="Choose website theme">
+      <option value="dark">Dark</option>
+      <option value="field">Field</option>
+      <option value="sky">Sky</option>
+      <option value="sunrise">Sunrise</option>
+    </select>
+  </div>
+</nav>
+
+<!-- ══ HERO ══════════════════════════════════════════════════════════ -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+  <div class="glow glow-3"></div>
+  <div class="hero-grid"></div>
+  <aside class="mission-rail" aria-label="Monitoring capabilities">
+    <div class="rail-item"><span class="rail-icon">CAM</span><span>Aerial<br>Monitoring</span></div>
+    <div class="rail-item"><span class="rail-icon">AI</span><span>Computer<br>Vision</span></div>
+    <div class="rail-item"><span class="rail-icon">LEAF</span><span>Plant Disease<br>Detection</span></div>
+    <div class="rail-item"><span class="rail-icon">FIRE</span><span>Fire Detection<br>Alerts</span></div>
+    <div class="rail-item"><span class="rail-icon">DATA</span><span>Field<br>Insights</span></div>
+  </aside>
+  <div class="mission-status" aria-hidden="true">
+    <h3>Mission Status</h3>
+    <div class="mission-row"><span>Altitude</span><strong>80 m</strong></div>
+    <div class="mission-row"><span>Speed</span><strong>8.2 m/s</strong></div>
+    <div class="mission-row"><span>Coverage</span><strong>62%</strong></div>
+    <div class="mission-row"><span>Signal</span><strong>Strong</strong></div>
+  </div>
+  <div class="field-scan" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <div class="badge"><span class="badge-dot"></span>AI-powered drone system for crop and fire monitoring</div>
+
+    <h1 class="hero-title">
+      <span class="line-1">AgroDrone AI</span>
+      <span class="line-2">Crop &amp; Fire Sentinel</span>
+    </h1>
+
+    <p class="hero-sub">
+      A graduation project that uses drone vision and YOLOv8 models to detect plant disease, smoke, and fire risk from field images.
+    </p>
+
+    <div class="hero-actions">
+      <a href="#demo" class="btn-primary">Try Live Demo</a>
+      <a href="#models" class="btn-secondary">Explore AI Models</a>
+    </div>
+  </div>
+
+  <!-- Animated drone -->
+  <div class="hero-drone">
+    <div class="drone-wrap">
+      <div class="drone-ring ring-1"></div>
+      <div class="drone-ring ring-2"></div>
+      <div class="drone-ring ring-3"></div>
+      <svg width="180" height="110" viewBox="0 0 180 110" fill="none" xmlns="http://www.w3.org/2000/svg"
+           style="position:relative;z-index:1;filter:drop-shadow(0 0 22px rgba(29,223,122,.45))">
+        <!-- Body -->
+        <rect x="65" y="40" width="50" height="30" rx="7" fill="#121e30" stroke="rgba(29,223,122,.65)" stroke-width="1.5"/>
+        <!-- Camera -->
+        <rect x="78" y="66" width="24" height="14" rx="5" fill="#0d1520" stroke="rgba(29,223,122,.4)" stroke-width="1"/>
+        <circle cx="90" cy="73" r="5" fill="rgba(29,223,122,.25)" stroke="rgba(29,223,122,.6)" stroke-width="1"/>
+        <circle cx="90" cy="73" r="2.5" fill="#1ddf7a">
+          <animate attributeName="opacity" values="1;.3;1" dur="1.8s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Arms -->
+        <line x1="65" y1="46" x2="28" y2="18" stroke="rgba(29,223,122,.5)" stroke-width="2.2"/>
+        <line x1="115" y1="46" x2="152" y2="18" stroke="rgba(29,223,122,.5)" stroke-width="2.2"/>
+        <line x1="65" y1="64" x2="28" y2="92" stroke="rgba(29,223,122,.5)" stroke-width="2.2"/>
+        <line x1="115" y1="64" x2="152" y2="92" stroke="rgba(29,223,122,.5)" stroke-width="2.2"/>
+        <!-- Motor hubs -->
+        <circle cx="28" cy="18" r="8" fill="#121e30" stroke="rgba(29,223,122,.55)" stroke-width="1.5"/>
+        <circle cx="152" cy="18" r="8" fill="#121e30" stroke="rgba(29,223,122,.55)" stroke-width="1.5"/>
+        <circle cx="28" cy="92" r="8" fill="#121e30" stroke="rgba(29,223,122,.55)" stroke-width="1.5"/>
+        <circle cx="152" cy="92" r="8" fill="#121e30" stroke="rgba(29,223,122,.55)" stroke-width="1.5"/>
+        <!-- Spinning propellers -->
+        <ellipse cx="28" cy="18" rx="26" ry="3.5" fill="rgba(29,223,122,.13)" stroke="rgba(29,223,122,.38)" stroke-width=".7">
+          <animateTransform attributeName="transform" type="rotate" from="0 28 18" to="360 28 18" dur=".28s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="152" cy="18" rx="26" ry="3.5" fill="rgba(29,223,122,.13)" stroke="rgba(29,223,122,.38)" stroke-width=".7">
+          <animateTransform attributeName="transform" type="rotate" from="360 152 18" to="0 152 18" dur=".28s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="28" cy="92" rx="26" ry="3.5" fill="rgba(29,223,122,.13)" stroke="rgba(29,223,122,.38)" stroke-width=".7">
+          <animateTransform attributeName="transform" type="rotate" from="360 28 92" to="0 28 92" dur=".28s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="152" cy="92" rx="26" ry="3.5" fill="rgba(29,223,122,.13)" stroke="rgba(29,223,122,.38)" stroke-width=".7">
+          <animateTransform attributeName="transform" type="rotate" from="0 152 92" to="360 152 92" dur=".28s" repeatCount="indefinite"/>
+        </ellipse>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num" data-count="94" data-suffix="%">94%</div>
+      <div class="stat-label">Fire Detection Accuracy</div>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="87" data-suffix="%">87%</div>
+      <div class="stat-label">Disease Detection Accuracy</div>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat-item">
+      <div class="stat-num">&lt;2s</div>
+      <div class="stat-label">Alert Latency</div>
+    </div>
+    <div class="stat-div"></div>
+    <div class="stat-item">
+      <div class="stat-num">24/7</div>
+      <div class="stat-label">Autonomous Monitoring</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ TECH STRIP ════════════════════════════════════════════════════ -->
+<div class="tech-strip">
+  <div class="tech-label">Built with industry-leading technologies</div>
+  <div class="tech-logos">
+    <div class="tech-logo"><div class="tl-icon">AI</div>YOLOv8</div>
+    <div class="tech-logo"><div class="tl-icon">DB</div>Firebase</div>
+    <div class="tech-logo"><div class="tl-icon">APP</div>Flutter</div>
+    <div class="tech-logo"><div class="tl-icon">PY</div>Python</div>
+    <div class="tech-logo"><div class="tl-icon">CS</div>Cloud Storage</div>
+    <div class="tech-logo"><div class="tl-icon">MAP</div>Google Maps</div>
+  </div>
+</div>
+
+<!-- ══ MODELS ════════════════════════════════════════════════════════ -->
+<div id="models" class="models-bg">
+  <div class="sec">
+    <div class="sec-inner">
+      <div class="eyebrow reveal">AI Models</div>
+      <div class="sec-title reveal d1">Two Specialized Intelligence<br>Engines, One Platform</div>
+      <div class="sec-sub reveal d2">Our drone carries two fine-tuned YOLOv8 models working simultaneously — one watching for fire and smoke, the other scanning every leaf for signs of disease.</div>
+
+      <div class="models-grid">
+        <!-- Fire -->
+        <div class="mc fire-card reveal d1">
+          <div class="mc-visual">
+            <div class="fire-bg">
+              <div class="flame">
+                <div class="fp fp-o"></div>
+                <div class="fp fp-m"></div>
+                <div class="fp fp-i"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mc-body">
+            <span class="mc-tag fire-tag">Fire &amp; Smoke Detection</span>
+            <h3>Wildfire Prevention AI</h3>
+            <p>Detects fire and smoke signatures from aerial footage with sub-2-second latency. Automatically uploads evidence to the cloud and triggers real-time alerts with GPS coordinates.</p>
+            <div class="metrics">
+              <div class="met"><span class="mv f">94%</span><span class="mk">mAP Accuracy</span></div>
+              <div class="met"><span class="mv f">&lt;2s</span><span class="mk">Alert Latency</span></div>
+              <div class="met"><span class="mv f">YOLOv8</span><span class="mk">Model</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Disease -->
+        <div class="mc dis-card reveal d2">
+          <div class="mc-visual">
+            <div class="dis-bg">
+              <div class="scan-line"></div>
+              <div class="scan-grid">
+                <div class="sc h" style="animation-delay:0s"></div>
+                <div class="sc h" style="animation-delay:.25s"></div>
+                <div class="sc i" style="animation-delay:.5s"></div>
+                <div class="sc h" style="animation-delay:.1s"></div>
+                <div class="sc h" style="animation-delay:.35s"></div>
+                <div class="sc s" style="animation-delay:.6s"></div>
+                <div class="sc i" style="animation-delay:.75s"></div>
+                <div class="sc h" style="animation-delay:.45s"></div>
+                <div class="sc h" style="animation-delay:.2s"></div>
+                <div class="sc i" style="animation-delay:.85s"></div>
+                <div class="sc h" style="animation-delay:.4s"></div>
+                <div class="sc h" style="animation-delay:.95s"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mc-body">
+            <span class="mc-tag dis-tag">Plant Disease Detection</span>
+            <h3>Crop Health Intelligence</h3>
+            <p>Scans aerial imagery row-by-row to identify early signs of crop disease. Classifies infection type and severity, logs GPS coordinates, and sends an instant photo report.</p>
+            <div class="metrics">
+              <div class="met"><span class="mv a">87%</span><span class="mk">mAP Accuracy</span></div>
+              <div class="met"><span class="mv a">15+</span><span class="mk">Disease Types</span></div>
+              <div class="met"><span class="mv a">YOLOv8</span><span class="mk">Model</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento smalls -->
+      <div class="bento-smalls reveal">
+        <div class="bs">
+          <span class="bs-icon">GPS</span>
+          <h4>GPS Geo-tagging</h4>
+          <p>Every detection is pinned to exact coordinates on your farm map, so you know precisely where to act.</p>
+        </div>
+        <div class="bs">
+          <span class="bs-icon">CLD</span>
+          <h4>Instant Cloud Sync</h4>
+          <p>Evidence photos auto-upload to Firebase Storage the moment a threat crosses the confidence threshold.</p>
+        </div>
+        <div class="bs">
+          <span class="bs-icon">DATA</span>
+          <h4>Firestore History</h4>
+          <p>Full detection timeline with timestamps, severity scores, and image URLs in real-time Firestore.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DEMO ══════════════════════════════════════════════════════════ -->
+<div id="demo">
+  <div class="sec">
+    <div class="sec-inner">
+      <div class="eyebrow reveal">Live Demo</div>
+      <div class="sec-title reveal d1">Test the AI Models Now</div>
+      <div class="sec-sub reveal d2">Upload any field photo or outdoor image and see our models detect threats instantly.</div>
+
+      <div class="demo-grid">
+        <!-- Upload panel -->
+        <div class="demo-panel reveal reveal-l">
+          <div class="panel-bar">
+            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <div class="bar-title">AI Detection Playground</div>
+          </div>
+          <div class="model-tabs">
+            <button class="mtab af" id="tab-fire" onclick="selectModel('fire')">Fire Detection</button>
+            <button class="mtab" id="tab-dis" onclick="selectModel('disease')">Disease Detection</button>
+          </div>
+          <div class="api-status" id="api-status">Checking real AI API...</div>
+          <div class="api-connector">
+            <input class="api-input" id="api-base-input" type="url" inputmode="url"
+                   placeholder="Paste current public API URL">
+            <button class="api-save" type="button" onclick="saveApiBase()">Connect</button>
+            <div class="api-note" id="api-note">For phone testing, open the public tunnel URL directly or paste the current tunnel URL here.</div>
+          </div>
+          <div class="upload-zone" id="upload-zone"
+               ondragover="onDrag(event)" ondragleave="offDrag()" ondrop="onDrop(event)">
+            <input type="file" accept="image/*" id="file-input" onchange="handleFile(this)">
+            <span class="up-icon" id="up-icon">IMAGE</span>
+            <h4 id="up-title">Tap to choose a photo</h4>
+            <p id="up-sub">JPG, PNG up to 20MB — field photos, aerial shots</p>
+          </div>
+          <!-- Camera shortcut shown only on touch/mobile devices -->
+          <div class="mobile-cam-row" id="mobile-cam-row" style="display:none;gap:8px;margin-bottom:10px;">
+            <button class="btn-secondary" style="flex:1;justify-content:center;font-size:.82rem;"
+                    onclick="document.getElementById('cam-input').click()">
+              📷 Open Camera
+            </button>
+            <button class="btn-secondary" style="flex:1;justify-content:center;font-size:.82rem;"
+                    onclick="document.getElementById('file-input').click()">
+              🖼 Choose Photo
+            </button>
+            <input type="file" accept="image/*" capture="environment" id="cam-input"
+                   style="display:none" onchange="handleFile(this)">
+          </div>
+          <div class="analyze-btn-wrap">
+            <button class="btn-primary" style="width:100%;justify-content:center;" onclick="runDemo()">
+              Analyze Image
+            </button>
+          </div>
+        </div>
+
+        <!-- Result panel -->
+        <div class="demo-panel reveal reveal-r">
+          <div class="panel-bar">
+            <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+            <div class="bar-title">Detection Results</div>
+          </div>
+          <div class="result-area">
+            <div class="result-ph" id="result-ph">
+              <p style="font-size:2.2rem;margin-bottom:.6rem">AI</p>
+              <p>Upload an image and click Analyze<br>to see AI detection results here.</p>
+            </div>
+            <div class="result-card" id="result-card">
+              <div class="result-img-wrap" id="result-img">
+                <span>Image preview</span>
+              </div>
+              <div class="result-body">
+                <div class="rr"><span class="rk">Model</span><span class="rv" id="r-model">—</span></div>
+                <div class="rr"><span class="rk">Detection</span><span class="rv" id="r-det">—</span></div>
+                <div class="rr">
+                  <span class="rk">Confidence</span>
+                  <span class="conf-wrap">
+                    <div class="conf-bar"><div class="conf-fill" id="r-conf-bar"></div></div>
+                    <span class="rv" id="r-conf">—</span>
+                  </span>
+                </div>
+                <div class="rr"><span class="rk">Status</span><span id="r-status">—</span></div>
+              </div>
+              <div class="fb-result-link" id="fb-result-link" onclick="openFeedback()">
+                Was this result accurate? Share your feedback
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PIPELINE ══════════════════════════════════════════════════════ -->
+<div id="pipeline" class="pipeline-bg">
+  <div class="sec">
+    <div class="sec-inner">
+      <div style="text-align:center;max-width:620px;margin:0 auto;">
+        <div class="eyebrow reveal">How It Works</div>
+        <div class="sec-title reveal d1">From Sky to Alert<br>in Under 2 Seconds</div>
+        <div class="sec-sub reveal d2" style="margin:0 auto;">The complete detection pipeline from drone camera to farmer notification.</div>
+      </div>
+      <div class="pipeline reveal">
+        <div class="pipe-step">
+          <div class="pipe-icon">DR</div>
+          <div class="pipe-num">STEP 01</div>
+          <h4>Drone Patrol</h4>
+          <p>Autonomous drone flies pre-set routes over your farmland continuously</p>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-icon">CV</div>
+          <div class="pipe-num">STEP 02</div>
+          <h4>Vision Capture</h4>
+          <p>Camera streams real-time footage at 30fps to onboard processor</p>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-icon">AI</div>
+          <div class="pipe-num">STEP 03</div>
+          <h4>AI Analysis</h4>
+          <p>YOLOv8 models analyze every frame for fire, smoke, and disease</p>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-icon">DB</div>
+          <div class="pipe-num">STEP 04</div>
+          <h4>Cloud Upload</h4>
+          <p>Detections log to Firestore with GPS coordinates and evidence photo</p>
+        </div>
+        <div class="pipe-step">
+          <div class="pipe-icon">AL</div>
+          <div class="pipe-num">STEP 05</div>
+          <h4>Instant Alert</h4>
+          <p>Farmer gets real-time notification with location map and severity score</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ APP ═══════════════════════════════════════════════════════════ -->
+<div id="app">
+  <div class="sec">
+    <div class="sec-inner">
+      <div class="app-layout">
+        <div class="reveal reveal-l">
+          <div class="eyebrow">Mobile App</div>
+          <div class="sec-title">Mobile App<br>Coming Soon</div>
+          <p style="color:var(--dim);line-height:1.75;margin-top:.75rem;">The AgroDrone AI mobile experience is being prepared for a more reliable field release. Until launch, the web demo remains available for testing the connected AI models.</p>
+          <ul class="app-features">
+            <li class="af">
+              <div class="af-icon">MAP</div>
+              <div class="af-text"><h5>Live Detection Map</h5><p>Every fire alert and disease hotspot pinned in real-time on Google Maps.</p></div>
+            </li>
+            <li class="af">
+              <div class="af-icon">ALT</div>
+              <div class="af-text"><h5>Instant Push Alerts</h5><p>Notified within seconds of any detection, with photo evidence and severity score.</p></div>
+            </li>
+            <li class="af">
+              <div class="af-icon">LOG</div>
+              <div class="af-text"><h5>Full History Log</h5><p>Complete detection timeline with filters by date, type, and GPS location.</p></div>
+            </li>
+            <li class="af">
+              <div class="af-icon">SEC</div>
+              <div class="af-text"><h5>Secure &amp; Private</h5><p>Firebase Auth with role-based access. Your farm data stays yours.</p></div>
+            </li>
+          </ul>
+          <div class="coming-soon-card">
+            <div class="coming-soon-top">
+              <div>
+                <h4>Mobile app is coming soon</h4>
+                <p>Android packaging, field testing, and model response checks are in progress before the public release.</p>
+              </div>
+              <span class="release-badge">Beta preparation</span>
+            </div>
+            <div class="soon-progress" aria-label="Mobile app launch preparation progress"><span></span></div>
+            <div class="soon-grid">
+              <div class="soon-item"><strong>Testing</strong><span>Detection flow and alert history validation.</span></div>
+              <div class="soon-item"><strong>Packaging</strong><span>Android build preparation for release.</span></div>
+              <div class="soon-item"><strong>Review</strong><span>Final UI and data privacy checks.</span></div>
+            </div>
+            <div class="soon-actions">
+              <a href="#demo" class="btn-primary">Try Web Demo</a>
+              <a href="#pipeline" class="btn-secondary">View Pipeline</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phone -->
+        <div class="phone-wrap reveal reveal-r">
+          <div class="phone">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-hdr">AGRODRONE AI ▸ LIVE</div>
+              <div class="phone-map">
+                <div class="pm-grid"></div>
+                <!-- Drone path SVG -->
+                <svg class="pm-path" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 80 Q40 20 60 50 Q80 80 80 30" stroke="rgba(29,223,122,.3)" stroke-width="1" fill="none" stroke-dasharray="4 3"/>
+                </svg>
+                <div class="pm-alert"></div>
+                <div class="pm-drone"></div>
+              </div>
+              <div class="phone-stats">
+                <div class="psc">
+                  <div class="psc-val">3</div>
+                  <div class="psc-key">Alerts Today</div>
+                </div>
+                <div class="psc">
+                  <div class="psc-val" style="color:var(--green)">OK</div>
+                  <div class="psc-key">Drone Status</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-in">
+    <a href="#" class="footer-logo">
+      <div class="logo-mark">AD</div>AgroDrone AI
+    </a>
+    <span class="footer-copy">© 2026 AgroDrone AI — Graduation Project · All rights reserved</span>
+    <div class="footer-links">
+      <a href="#models">Models</a>
+      <a href="#demo">Demo</a>
+      <a href="#app">App</a>
+      <a href="mailto:izzoalkurd@gmail.com">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ FEEDBACK TAB ══════════════════════════════════════════════════ -->
+<div class="fb-tab" id="fb-tab" onclick="openFeedback()" title="Share feedback on our AI models">
+  Feedback
+</div>
+
+<div class="fb-overlay" id="fb-overlay" onclick="closeFeedback()"></div>
+
+<div class="fb-panel" id="fb-panel">
+  <div class="fb-panel-head">
+    <div>
+      <h3>Help Us Improve Our Models</h3>
+      <p>Your observations are training data. Every note helps us build smarter AI.</p>
+    </div>
+    <button class="fb-close" onclick="closeFeedback()">Close</button>
+  </div>
+
+  <div class="fb-notice">
+    <div class="fb-notice-title">Data Collection Notice</div>
+    <p>We're actively collecting real-world feedback to refine our fire detection and disease classification models. Notes you submit may be reviewed by our team and used to improve model accuracy. No personal information is required.</p>
+  </div>
+
+  <div class="fb-body" id="fb-body">
+    <div class="fb-context" id="fb-context">
+      <strong>Model tested:</strong> <span id="fb-ctx-model">—</span> &nbsp;·&nbsp;
+      <strong>Result:</strong> <span id="fb-ctx-result">—</span>
+    </div>
+
+    <div>
+      <span class="fb-label">How would you rate this result?</span>
+      <div class="fb-rating" id="fb-rating">
+        <span class="fb-star" data-v="1" onclick="rateResult(1)">★</span>
+        <span class="fb-star" data-v="2" onclick="rateResult(2)">★</span>
+        <span class="fb-star" data-v="3" onclick="rateResult(3)">★</span>
+        <span class="fb-star" data-v="4" onclick="rateResult(4)">★</span>
+        <span class="fb-star" data-v="5" onclick="rateResult(5)">★</span>
+      </div>
+    </div>
+
+    <div>
+      <span class="fb-label">What did you observe? (optional)</span>
+      <textarea class="fb-textarea" id="fb-notes"
+        placeholder="e.g. &quot;The model flagged a healthy crop as diseased&quot; or &quot;Fire detection was very accurate on dry grass images&quot;..."></textarea>
+    </div>
+
+    <button class="fb-submit" onclick="submitFeedback()">Send Feedback</button>
+
+    <div class="fb-thanks" id="fb-thanks">
+      <div class="ty-icon">OK</div>
+      <h4>Thank you!</h4>
+      <p>Your feedback helps us push our models further.<br>We review every note to improve accuracy.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   CANVAS PARTICLE NETWORK
+══════════════════════════════════════════════════════════════════ */
+(function(){
+  const cvs = document.getElementById('hero-canvas');
+  const ctx = cvs.getContext('2d');
+  let W, H, pts = [];
+
+  function resize(){ W = cvs.width = window.innerWidth; H = cvs.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function Pt(){
+    this.x = Math.random()*W; this.y = Math.random()*H;
+    this.vx = (Math.random()-.5)*.38; this.vy = (Math.random()-.5)*.38;
+    this.r  = Math.random()*1.4+.5;
+    this.a  = Math.random()*.45+.08;
+  }
+  for(let i=0;i<90;i++) pts.push(new Pt());
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    pts.forEach(p=>{
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0||p.x>W) p.vx*=-1;
+      if(p.y<0||p.y>H) p.vy*=-1;
+      ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(29,223,122,${p.a})`;
+      ctx.fill();
+    });
+
+    for (let i = 0; i < pts.length; i++) {
+      for (let j = i + 1; j < pts.length; j++) {
+        const a = pts[i], b = pts[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 135) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `rgba(29,223,122,${(1 - d / 135) * 0.12})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* Mobile camera buttons — show on touch devices */
+(function () {
+  const isTouch = navigator.maxTouchPoints > 0 || 'ontouchstart' in window;
+  if (isTouch) {
+    const row = document.getElementById('mobile-cam-row');
+    if (row) row.style.display = 'flex';
+    // On mobile, replace the drag-zone hint text with something tap-friendly
+    const upTitle = document.getElementById('up-title');
+    if (upTitle) upTitle.textContent = 'Tap here to choose a photo';
+  }
+})();
+
+/* Page state */
+let selectedModel = 'fire';
+let selectedFile = null;
+let selectedDataUrl = '';
+let lastResult = {
+  model: 'Fire Detection',
+  result: 'No analysis yet'
+};
+let currentRating = 0;
+function normalizeApiBase(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+function getAutoApiBase() {
+  if (window.AGRODRONE_API_BASE) return window.AGRODRONE_API_BASE;
+  if (location.protocol === 'file:') return 'http://127.0.0.1:8767';
+  if (location.port === '8765') return `${location.protocol}//${location.hostname}:8767`;
+  return location.origin;
+}
+let API_BASE = normalizeApiBase(localStorage.getItem('agrodrone_api_base') || getAutoApiBase());
+let apiOnline = false;
+const apiBaseInput = document.getElementById('api-base-input');
+const apiNote = document.getElementById('api-note');
+if (apiBaseInput) apiBaseInput.value = API_BASE;
+
+function saveApiBase() {
+  const nextBase = normalizeApiBase(apiBaseInput ? apiBaseInput.value : '');
+  if (!nextBase) {
+    localStorage.removeItem('agrodrone_api_base');
+    API_BASE = normalizeApiBase(getAutoApiBase());
+  } else {
+    API_BASE = nextBase;
+    localStorage.setItem('agrodrone_api_base', API_BASE);
+  }
+  if (apiBaseInput) apiBaseInput.value = API_BASE;
+  if (apiNote) apiNote.textContent = `Testing ${API_BASE}/api/health`;
+  checkApiStatus();
+}
+
+/* Themes */
+const themeSelect = document.getElementById('theme-select');
+const savedTheme = localStorage.getItem('agrodrone_theme') || 'dark';
+applyTheme(savedTheme);
+themeSelect.value = savedTheme;
+themeSelect.addEventListener('change', () => {
+  applyTheme(themeSelect.value);
+  localStorage.setItem('agrodrone_theme', themeSelect.value);
+});
+
+function applyTheme(theme) {
+  document.body.classList.remove('theme-field', 'theme-sky', 'theme-sunrise');
+  if (theme !== 'dark') document.body.classList.add(`theme-${theme}`);
+}
+
+checkApiStatus();
+setInterval(checkApiStatus, 15000);
+
+async function checkApiStatus() {
+  const badge = document.getElementById('api-status');
+  try {
+    if (!API_BASE) throw new Error('No API endpoint configured');
+    const res = await fetch(`${API_BASE}/api/health`, { cache: 'no-store' });
+    const data = await res.json();
+    apiOnline = Boolean(data.ok && data.models.fire && data.models.disease);
+    badge.className = `api-status ${apiOnline ? 'online' : 'offline'}`;
+    badge.textContent = apiOnline
+      ? 'Real YOLO API connected'
+      : 'API online, but one model file is missing';
+    if (apiNote) {
+      apiNote.textContent = apiOnline
+        ? `Connected to ${API_BASE}`
+        : `API responded, but model files are missing on ${API_BASE}`;
+    }
+  } catch (error) {
+    apiOnline = false;
+    badge.className = 'api-status offline';
+    badge.textContent = 'Real AI API offline: demo fallback available';
+    if (apiNote) {
+      apiNote.textContent = 'Start the public demo tunnel, then open its URL directly or paste it here.';
+    }
+  }
+}
+
+/* Navigation and reveal animations */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 18);
+});
+
+document.querySelectorAll('a[href^="#"]').forEach(link => {
+  link.addEventListener('click', event => {
+    const target = document.querySelector(link.getAttribute('href'));
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+});
+
+const revealObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('v');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* Count-up stats */
+const counted = new WeakSet();
+const countObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (!entry.isIntersecting || counted.has(entry.target)) return;
+    counted.add(entry.target);
+    const end = Number(entry.target.dataset.count || 0);
+    const suffix = entry.target.dataset.suffix || '';
+    if (!end) return;
+    let startTime = 0;
+    const duration = 1100;
+    function tick(time) {
+      if (!startTime) startTime = time;
+      const progress = Math.min((time - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      entry.target.textContent = `${Math.round(end * eased)}${suffix}`;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+}, { threshold: 0.65 });
+
+document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+
+/* Demo model controls */
+function selectModel(model) {
+  selectedModel = model;
+  document.getElementById('tab-fire').classList.toggle('af', model === 'fire');
+  document.getElementById('tab-dis').classList.toggle('af', model === 'disease');
+  document.getElementById('up-title').textContent =
+    model === 'fire' ? 'Upload fire, smoke, or outdoor image' : 'Upload crop leaf or field image';
+  document.getElementById('up-sub').textContent =
+    model === 'fire' ? 'Best for smoke columns, flame, and dry-field threats' : 'Best for leaves, stems, rows, and crop close-ups';
+}
+
+function onDrag(event) {
+  event.preventDefault();
+  document.getElementById('upload-zone').classList.add('drag');
+}
+
+function offDrag() {
+  document.getElementById('upload-zone').classList.remove('drag');
+}
+
+function onDrop(event) {
+  event.preventDefault();
+  offDrag();
+  const file = event.dataTransfer.files && event.dataTransfer.files[0];
+  if (file) setSelectedFile(file);
+}
+
+function handleFile(input) {
+  const file = input.files && input.files[0];
+  if (file) setSelectedFile(file);
+}
+
+function setSelectedFile(file) {
+  if (!file.type.startsWith('image/')) {
+    setUploadMessage('Please choose an image file.', 'JPG or PNG images work best.');
+    return;
+  }
+  if (file.size > 20 * 1024 * 1024) {
+    setUploadMessage('Image is too large.', 'Choose a file below 20MB.');
+    return;
+  }
+
+  selectedFile = file;
+  setUploadMessage(file.name, `${Math.round(file.size / 1024)} KB ready for analysis`);
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    selectedDataUrl = reader.result;
+    const preview = document.getElementById('result-img');
+    preview.innerHTML = `<img src="${selectedDataUrl}" alt="Uploaded image preview">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function setUploadMessage(title, subtitle) {
+  document.getElementById('up-title').textContent = title;
+  document.getElementById('up-sub').textContent = subtitle;
+}
+
+async function runDemo() {
+  const resultPlaceholder = document.getElementById('result-ph');
+  const resultCard = document.getElementById('result-card');
+  const resultImg = document.getElementById('result-img');
+  const resultLink = document.getElementById('fb-result-link');
+
+  resultPlaceholder.style.display = 'none';
+  resultCard.style.display = 'block';
+  resultLink.classList.add('show');
+
+  if (!selectedFile) {
+    resultImg.innerHTML = '<span>Please upload an image before running real analysis.</span>';
+    renderResult({
+      modelName: selectedModel === 'fire' ? 'YOLOv8 Fire & Smoke' : 'YOLOv8 Plant Disease',
+      detection: 'No image selected',
+      confidence: 0,
+      statusText: 'Waiting for image',
+      statusClass: 'badge-dis',
+      source: 'local'
+    });
+    return;
+  }
+
+  document.getElementById('r-model').textContent = 'Analyzing...';
+  document.getElementById('r-det').textContent = 'Running model inference';
+  document.getElementById('r-conf').textContent = '...';
+  document.getElementById('r-conf-bar').style.width = '18%';
+  document.getElementById('r-status').innerHTML = '<span class="status-badge badge-dis">Processing</span>';
+
+  if (apiOnline) {
+    try {
+      const form = new FormData();
+      form.append('image', selectedFile);
+      const response = await fetch(`${API_BASE}/api/detect?model=${selectedModel}`, {
+        method: 'POST',
+        body: form
+      });
+      const data = await response.json();
+      if (!response.ok || data.error) throw new Error(data.error || 'Detection API failed');
+      renderApiResult(data);
+      return;
+    } catch (error) {
+      document.getElementById('api-status').className = 'api-status offline';
+      document.getElementById('api-status').textContent = `API error: ${error.message}. Demo fallback used.`;
+    }
+  }
+
+  runDemoFallback();
+}
+
+function renderApiResult(data) {
+  if (data.annotated_image) {
+    document.getElementById('result-img').innerHTML =
+      `<img src="${data.annotated_image}" alt="YOLO annotated detection result">`;
+  }
+
+  const best = data.best_detection;
+  const detection = best
+    ? `${best.label} detected`
+    : 'No object detected above threshold';
+  const confidence = best ? best.confidence_percent : 0;
+  const statusText = best ? 'Real model result' : 'All clear';
+  const statusClass = data.model === 'fire' ? 'badge-fire' : 'badge-dis';
+
+  renderResult({
+    modelName: data.model_label,
+    detection,
+    confidence,
+    statusText,
+    statusClass,
+    source: 'api'
+  });
+}
+
+function runDemoFallback() {
+  if (!selectedDataUrl) {
+    document.getElementById('result-img').innerHTML = '<span>Demo mode: no uploaded image</span>';
+  }
+
+  const confidence = selectedModel === 'fire'
+    ? randomBetween(88, 96)
+    : randomBetween(82, 93);
+  const detection = selectedModel === 'fire'
+    ? (confidence > 92 ? 'Fire signature detected' : 'Smoke / heat risk detected')
+    : (confidence > 88 ? 'Plant disease symptoms detected' : 'Possible leaf stress detected');
+  const modelName = selectedModel === 'fire' ? 'YOLOv8 Fire & Smoke' : 'YOLOv8 Plant Disease';
+  renderResult({
+    modelName,
+    detection,
+    confidence,
+    statusText: 'Demo fallback result',
+    statusClass: selectedModel === 'fire' ? 'badge-fire' : 'badge-dis',
+    source: 'fallback'
+  });
+}
+
+function renderResult({ modelName, detection, confidence, statusText, statusClass, source }) {
+  document.getElementById('r-model').textContent = modelName;
+  document.getElementById('r-det').textContent = detection;
+  document.getElementById('r-conf').textContent = confidence ? `${confidence}%` : '0%';
+  document.getElementById('r-conf-bar').style.width = `${confidence}%`;
+  document.getElementById('r-status').innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
+
+  lastResult = { model: modelName, result: `${detection} (${source})` };
+  document.getElementById('fb-ctx-model').textContent = modelName;
+  document.getElementById('fb-ctx-result').textContent = lastResult.result;
+}
+
+function randomBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+/* Feedback panel */
+function openFeedback() {
+  document.getElementById('fb-overlay').classList.add('open');
+  document.getElementById('fb-panel').classList.add('open');
+  document.getElementById('fb-ctx-model').textContent = lastResult.model;
+  document.getElementById('fb-ctx-result').textContent = lastResult.result;
+}
+
+function closeFeedback() {
+  document.getElementById('fb-overlay').classList.remove('open');
+  document.getElementById('fb-panel').classList.remove('open');
+}
+
+function rateResult(value) {
+  currentRating = value;
+  document.querySelectorAll('.fb-star').forEach(star => {
+    star.classList.toggle('on', Number(star.dataset.v) <= value);
+  });
+}
+
+function submitFeedback() {
+  const notes = document.getElementById('fb-notes').value.trim();
+  const payload = {
+    rating: currentRating,
+    notes,
+    model: lastResult.model,
+    result: lastResult.result,
+    submittedAt: new Date().toISOString()
+  };
+
+  const saved = JSON.parse(localStorage.getItem('agrodrone_feedback') || '[]');
+  saved.push(payload);
+  localStorage.setItem('agrodrone_feedback', JSON.stringify(saved));
+
+  document.getElementById('fb-thanks').style.display = 'block';
+  document.getElementById('fb-notes').value = '';
+  setTimeout(() => {
+    document.getElementById('fb-thanks').style.display = 'none';
+    closeFeedback();
+  }, 1800);
+}
+
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeFeedback();
+});
+</script>
+</body>
+</html>

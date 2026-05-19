@@ -1,0 +1,48 @@
+# ── Large zips & archives ──────────────────────────────────────────
+*.zip
+*.gz
+*.tar
+
+# ── Python ────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+
+# ── Flutter / Dart build output ───────────────────────────────────
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/pubspec.lock
+
+# ── Logs & temp ───────────────────────────────────────────────────
+*.log
+*.out.log
+*.err.log
+outputs/
+.tmp_pycache/
+.wrangler/
+
+# ── Local detections saved on disk ────────────────────────────────
+**/detections_local/
+**/graduation_project_data/
+
+# ── Firebase service account key (NEVER commit this) ──────────────
+serviceAccountKey.json
+
+# ── IDE / OS ──────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# ── Previous website snapshots ────────────────────────────────────
+_previous_website_extract/
+
+# ── Unused zip sub-folders ────────────────────────────────────────
+zi4TdiFK/

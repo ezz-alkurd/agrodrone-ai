@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: agrodrone-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python deploy/agrodrone_api.py
+    envVars:
+      - key: AGRODRONE_API_HOST
+        value: 0.0.0.0
+    # Render free tier — models load on first request (~30s cold start).
+    # Upgrade to Starter ($7/mo) to keep it warm between requests.
