@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import base64
-import cgi
+import email
 import json
 import mimetypes
 import os
@@ -134,6 +134,26 @@ def infer(model_key: str, image_bytes: bytes) -> dict:
     }
 
 
+def _parse_multipart_image(rfile, headers) -> bytes | None:
+    """Extract the raw bytes of the 'image' field from a multipart/form-data request.
+
+    Replaces the removed cgi.FieldStorage (Python 3.13+).
+    """
+    content_type = headers.get("Content-Type", "")
+    content_length = int(headers.get("Content-Length", "0") or "0")
+    body = rfile.read(content_length)
+    # Build a minimal RFC 2822 message so email.message_from_bytes can parse it
+    raw = b"Content-Type: " + content_type.encode() + b"\r\n\r\n" + body
+    msg = email.message_from_bytes(raw)
+    for part in msg.walk():
+        name = part.get_param("name", header="content-disposition")
+        if name == "image":
+            payload = part.get_payload(decode=True)
+            if payload:
+                return payload
+    return None
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = "AgroDroneAPI/1.0"
 
@@ -196,19 +216,9 @@ class Handler(BaseHTTPRequestHandler):
         try:
             query = parse_qs(urlparse(self.path).query)
             model_key = query.get("model", ["fire"])[0]
-            form = cgi.FieldStorage(
-                fp=self.rfile,
-                headers=self.headers,
-                environ={
-                    "REQUEST_METHOD": "POST",
-                    "CONTENT_TYPE": self.headers.get("Content-Type", ""),
-                    "CONTENT_LENGTH": self.headers.get("Content-Length", "0"),
-                },
-            )
-            file_item = form["image"] if "image" in form else None
-            if file_item is None or not getattr(file_item, "file", None):
+            payload = _parse_multipart_image(self.rfile, self.headers)
+            if payload is None:
                 raise ValueError("Upload field 'image' is required")
-            payload = file_item.file.read()
             self.write_json(infer(model_key, payload))
         except Exception as exc:
             self.write_json({"error": str(exc)}, status=500)
