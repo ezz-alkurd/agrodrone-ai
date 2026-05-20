@@ -24,10 +24,10 @@ MODELS = {
     "disease": MODEL_DIR / "plant_disease_best2.pt",
 }
 
-CONF = 0.15
+CONF = 0.60
 EXCLUDED = {
-    "fire": {"other"},
-    "disease": {"strawberry"},
+        "fire": {"default"},
+        "disease": {"Pepper__bell___healthy", "Potato___healthy", "Tomato_healthy"},
 }
 
 _loaded_models: dict[str, YOLO] = {}
